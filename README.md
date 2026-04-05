@@ -85,7 +85,7 @@ also customise the bind address and port:
 ```bash
 export MCP_TRANSPORT="streamable-http"
 export MCP_HOST="127.0.0.1"   # default: 127.0.0.1
-export MCP_PORT="8000"         # default: 8000
+export MCP_PORT="8000"        # default: 8000
 uv run mediawiki-api-mcp
 ```
 

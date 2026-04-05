@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Literal
+from typing import Literal, cast
 
 from mcp.server.fastmcp import FastMCP
 
@@ -36,7 +36,9 @@ if _transport_raw not in _VALID_TRANSPORTS:
     raise ValueError(
         f"MCP_TRANSPORT must be one of {_VALID_TRANSPORTS}, got: {_transport_raw!r}"
     )
-_transport: Literal["stdio", "sse", "streamable-http"] = _transport_raw  # type: ignore[assignment]
+_transport: Literal["stdio", "sse", "streamable-http"] = cast(
+    Literal["stdio", "sse", "streamable-http"], _transport_raw
+)
 
 if _transport == "streamable-http":
     mcp = FastMCP(
