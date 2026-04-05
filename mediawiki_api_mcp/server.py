@@ -68,7 +68,7 @@ register_wiki_meta_siteinfo_tool(mcp, get_config)
 
 def run_server() -> None:
     """Synchronous entry point for the MCP server."""
-    mcp.run(transport='streamable-http')
+    mcp.run(transport='http')
 
 if __name__ == "__main__":
     run_server()
