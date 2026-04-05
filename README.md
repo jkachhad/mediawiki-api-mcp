@@ -54,6 +54,26 @@ Or directly:
 python -m mediawiki_api_mcp.server
 ```
 
+By default the server listens on `http://127.0.0.1:8000` and exposes the MCP
+endpoint at `http://127.0.0.1:8000/mcp`.
+
+You can customise the bind address and port with environment variables:
+
+```bash
+export MCP_HOST="0.0.0.0"   # default: 127.0.0.1
+export MCP_PORT="9000"       # default: 8000
+uv run mediawiki-api-mcp
+```
+
+### Connecting a Client
+
+Any MCP client that supports the **Streamable HTTP** transport can connect by
+pointing it at the `/mcp` endpoint, e.g.:
+
+```
+http://127.0.0.1:8000/mcp
+```
+
 ### Configuration with Claude Desktop
 
 #### Configuration File Location
@@ -63,25 +83,15 @@ python -m mediawiki_api_mcp.server
 
 #### Template Configuration
 
-Add to your Claude Desktop configuration file:
+Start the server first, then add a remote MCP entry to your Claude Desktop
+configuration file:
 
 ```json
 {
   "mcpServers": {
     "mediawiki-api": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/absolute/path/to/mediawiki-api-mcp",
-        "run",
-        "mediawiki-api-mcp"
-      ],
-      "env": {
-        "MEDIAWIKI_API_URL": "http://mediawiki.test/api.php",
-        "MEDIAWIKI_API_BOT_USERNAME": "YourUserName@YourBotName",
-        "MEDIAWIKI_API_BOT_PASSWORD": "YourBotPassword",
-        "MEDIAWIKI_API_BOT_USER_AGENT": "MediaWiki-MCP-Bot/1.0 (your.email@mediawiki.test)"
-      }
+      "type": "streamable-http",
+      "url": "http://127.0.0.1:8000/mcp"
     }
   }
 }
@@ -89,11 +99,11 @@ Add to your Claude Desktop configuration file:
 
 #### Configuration Instructions
 
-1. Replace `/absolute/path/to/mediawiki-api-mcp` with the actual absolute path to this project directory
-2. Update `MEDIAWIKI_API_URL` with your MediaWiki installation's API endpoint
-3. Set `MEDIAWIKI_API_BOT_USERNAME` to your bot username (typically in format `YourUserName@YourBotName`)
-4. Set `MEDIAWIKI_API_BOT_PASSWORD` to the generated bot password from your wiki's `Special:BotPasswords` page
-5. Customize `MEDIAWIKI_API_BOT_USER_AGENT` with appropriate contact information (optional)
+1. Update `MEDIAWIKI_API_URL` with your MediaWiki installation's API endpoint
+2. Set `MEDIAWIKI_API_BOT_USERNAME` to your bot username (typically in format `YourUserName@YourBotName`)
+3. Set `MEDIAWIKI_API_BOT_PASSWORD` to the generated bot password from your wiki's `Special:BotPasswords` page
+4. Customize `MEDIAWIKI_API_BOT_USER_AGENT` with appropriate contact information (optional)
+5. Start the server with `uv run mediawiki-api-mcp` and point your MCP client at `http://127.0.0.1:8000/mcp`
 
 ##### Bot Password Setup
 
@@ -125,7 +135,7 @@ Required permissions:
 
 ### Architecture
 
-- FastMCP server with `@mcp.tool()` decorators
+- FastMCP server with `@mcp.tool()` decorators running over **Streamable HTTP**
 - Separation of concerns: server → handler → client → MediaWiki API
 - AsyncIO throughout for non-blocking operations
 - Environment-based configuration for MediaWiki credentials
