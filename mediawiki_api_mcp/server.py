@@ -31,7 +31,7 @@ def _parse_port(value: str) -> int:
 
 mcp = FastMCP(
     "mediawiki-api-server",
-    host=os.getenv("MCP_HOST", "127.0.0.1"),
+    host=os.getenv("MCP_HOST", "0.0.0.0"),
     port=_parse_port(os.getenv("MCP_PORT", "8000")),
 )
 
