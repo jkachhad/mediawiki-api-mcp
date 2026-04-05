@@ -17,7 +17,7 @@ from .server_tools.wiki_page_parse import register_wiki_page_parse_tool
 from .server_tools.wiki_page_undelete import register_wiki_page_undelete_tool
 from .server_tools.wiki_search import register_wiki_search_tool
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
