@@ -29,7 +29,7 @@ def _parse_port(value: str) -> int:
         raise ValueError(f"MCP_PORT must be a valid integer, got: {value!r}") from None
 
 
-mcp = FastMCP("mediawiki-api-server")
+mcp = FastMCP("mediawiki-api-server", host="0.0.0.0", port=8000)
 
 def get_config() -> MediaWikiConfig:
     """Get MediaWiki configuration from environment variables."""
@@ -68,7 +68,7 @@ register_wiki_meta_siteinfo_tool(mcp, get_config)
 
 def run_server() -> None:
     """Synchronous entry point for the MCP server."""
-    mcp.run(transport='streamable-http', host="0.0.0.0", port=8000)
+    mcp.run(transport='streamable-http')
 
 if __name__ == "__main__":
     run_server()
