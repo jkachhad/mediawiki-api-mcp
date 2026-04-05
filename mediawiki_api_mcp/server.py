@@ -2,6 +2,7 @@
 
 import logging
 import os
+from typing import Literal
 
 from mcp.server.fastmcp import FastMCP
 
@@ -29,11 +30,22 @@ def _parse_port(value: str) -> int:
         raise ValueError(f"MCP_PORT must be a valid integer, got: {value!r}") from None
 
 
-mcp = FastMCP(
-    "mediawiki-api-server",
-    host=os.getenv("MCP_HOST", "127.0.0.1"),
-    port=_parse_port(os.getenv("MCP_PORT", "8000")),
-)
+_VALID_TRANSPORTS: tuple[str, ...] = ("stdio", "sse", "streamable-http")
+_transport_raw = os.getenv("MCP_TRANSPORT", "stdio")
+if _transport_raw not in _VALID_TRANSPORTS:
+    raise ValueError(
+        f"MCP_TRANSPORT must be one of {_VALID_TRANSPORTS}, got: {_transport_raw!r}"
+    )
+_transport: Literal["stdio", "sse", "streamable-http"] = _transport_raw  # type: ignore[assignment]
+
+if _transport == "streamable-http":
+    mcp = FastMCP(
+        "mediawiki-api-server",
+        host=os.getenv("MCP_HOST", "127.0.0.1"),
+        port=_parse_port(os.getenv("MCP_PORT", "8000")),
+    )
+else:
+    mcp = FastMCP("mediawiki-api-server")
 
 
 def get_config() -> MediaWikiConfig:
@@ -73,7 +85,7 @@ register_wiki_meta_siteinfo_tool(mcp, get_config)
 
 def run_server() -> None:
     """Synchronous entry point for the MCP server."""
-    mcp.run(transport='streamable-http')
+    mcp.run(transport=_transport)
 
 
 if __name__ == "__main__":

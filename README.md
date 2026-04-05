@@ -54,25 +54,42 @@ Or directly:
 python -m mediawiki_api_mcp.server
 ```
 
-By default the server listens on `http://127.0.0.1:8000` and exposes the MCP
-endpoint at `http://127.0.0.1:8000/mcp`.
+By default the server uses **stdio** transport, which is compatible with any
+MCP client that spawns the server as a subprocess (the most common deployment
+model).
 
-You can customise the bind address and port with environment variables:
+### Transport Modes
+
+The server supports two transport modes, selected via the `MCP_TRANSPORT`
+environment variable:
+
+| Value | Default | Description |
+|---|---|---|
+| `stdio` | ✅ yes | Reads/writes JSON-RPC over stdin/stdout; client spawns the process |
+| `streamable-http` | no | HTTP server; client connects over the network |
+
+#### stdio (default)
+
+No extra configuration is needed. The client spawns `mediawiki-api-mcp` and
+communicates over stdin/stdout:
 
 ```bash
-export MCP_HOST="0.0.0.0"   # default: 127.0.0.1
-export MCP_PORT="9000"       # default: 8000
+uv run mediawiki-api-mcp          # MCP_TRANSPORT defaults to "stdio"
+```
+
+#### Streamable HTTP
+
+Set `MCP_TRANSPORT=streamable-http` to start an HTTP server instead. You can
+also customise the bind address and port:
+
+```bash
+export MCP_TRANSPORT="streamable-http"
+export MCP_HOST="127.0.0.1"   # default: 127.0.0.1
+export MCP_PORT="8000"         # default: 8000
 uv run mediawiki-api-mcp
 ```
 
-### Connecting a Client
-
-Any MCP client that supports the **Streamable HTTP** transport can connect by
-pointing it at the `/mcp` endpoint, e.g.:
-
-```
-http://127.0.0.1:8000/mcp
-```
+The MCP endpoint is then available at `http://127.0.0.1:8000/mcp`.
 
 ### Configuration with Claude Desktop
 
@@ -81,10 +98,30 @@ http://127.0.0.1:8000/mcp
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-#### Template Configuration
+#### stdio transport (recommended)
 
-Start the server first, then add a remote MCP entry to your Claude Desktop
-configuration file:
+Claude Desktop spawns the server automatically — no need to start it manually:
+
+```json
+{
+  "mcpServers": {
+    "mediawiki-api": {
+      "command": "uv",
+      "args": ["run", "mediawiki-api-mcp"],
+      "env": {
+        "MEDIAWIKI_API_URL": "http://mediawiki.test/api.php",
+        "MEDIAWIKI_API_BOT_USERNAME": "YourUserName@YourBotName",
+        "MEDIAWIKI_API_BOT_PASSWORD": "YourBotPassword"
+      }
+    }
+  }
+}
+```
+
+#### Streamable HTTP transport
+
+Start the server first with `MCP_TRANSPORT=streamable-http`, then add a
+remote MCP entry:
 
 ```json
 {
@@ -103,7 +140,6 @@ configuration file:
 2. Set `MEDIAWIKI_API_BOT_USERNAME` to your bot username (typically in format `YourUserName@YourBotName`)
 3. Set `MEDIAWIKI_API_BOT_PASSWORD` to the generated bot password from your wiki's `Special:BotPasswords` page
 4. Customize `MEDIAWIKI_API_BOT_USER_AGENT` with appropriate contact information (optional)
-5. Start the server with `uv run mediawiki-api-mcp` and point your MCP client at `http://127.0.0.1:8000/mcp`
 
 ##### Bot Password Setup
 
@@ -135,7 +171,7 @@ Required permissions:
 
 ### Architecture
 
-- FastMCP server with `@mcp.tool()` decorators running over **Streamable HTTP**
+- FastMCP server with `@mcp.tool()` decorators running over **stdio** (default) or **Streamable HTTP**
 - Separation of concerns: server → handler → client → MediaWiki API
 - AsyncIO throughout for non-blocking operations
 - Environment-based configuration for MediaWiki credentials
