@@ -29,7 +29,7 @@ def _parse_port(value: str) -> int:
         raise ValueError(f"MCP_PORT must be a valid integer, got: {value!r}") from None
 
 
-mcp = FastMCP("mediawiki-api-server", host="0.0.0.0", port=8000)
+mcp = FastMCP("mediawiki-api-server", host="127.0.0.1", port=8000)
 
 def get_config() -> MediaWikiConfig:
     """Get MediaWiki configuration from environment variables."""
