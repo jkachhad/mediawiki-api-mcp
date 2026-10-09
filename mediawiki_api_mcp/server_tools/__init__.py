@@ -7,6 +7,7 @@ from .wiki_page_edit import register_wiki_page_edit_tool
 from .wiki_page_get import register_wiki_page_get_tool
 from .wiki_page_move import register_wiki_page_move_tool
 from .wiki_page_parse import register_wiki_page_parse_tool
+from .wiki_page_protect import register_wiki_page_protect_tool
 from .wiki_page_undelete import register_wiki_page_undelete_tool
 from .wiki_search import register_wiki_search_tool
 
@@ -19,5 +20,6 @@ __all__ = [
     "register_wiki_page_move_tool",
     "register_wiki_page_delete_tool",
     "register_wiki_page_undelete_tool",
+    "register_wiki_page_protect_tool",
     "register_wiki_meta_siteinfo_tool",
 ]

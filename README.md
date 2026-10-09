@@ -17,6 +17,7 @@ The server provides various MCP tools with the `wiki_` prefix:
 |[**`wiki_page_move`**](docs/tools/wiki_page_move.md)|Move pages with support for talk pages, subpages, and redirects|
 |[**`wiki_page_delete`**](docs/tools/wiki_page_delete.md)|Delete pages with support for talk pages, watchlist management, and logging|
 |[**`wiki_page_undelete`**](docs/tools/wiki_page_undelete.md)|Undelete (restore) deleted MediaWiki pages with comprehensive restoration options|
+|[**`wiki_page_protect`**](docs/tools/wiki_page_protect.md)|Change the protection level of a page (edit, move, create) with expiry and cascading options|
 |[**`wiki_search`**](docs/tools/wiki_search.md)|Search for pages using MediaWiki's search API with advanced filtering|
 |[**`wiki_opensearch`**](docs/tools/wiki_opensearch.md)|Search using OpenSearch protocol for quick suggestions and autocomplete|
 |[**`wiki_meta_siteinfo`**](docs/tools/wiki_meta_siteinfo.md)|Get overall site information including general info, namespaces, statistics, extensions, and more|
