@@ -721,6 +721,97 @@ class MediaWikiPageClient:
             logger.error(f"Undelete request failed: {e}")
             raise
 
+    async def protect_page(
+        self,
+        protections: list[str],
+        title: str | None = None,
+        pageid: int | None = None,
+        expiry: list[str] | None = None,
+        reason: str | None = None,
+        tags: list[str] | None = None,
+        cascade: bool = False,
+        watchlist: str = "preferences",
+        watchlistexpiry: str | None = None,
+        **kwargs: Any
+    ) -> dict[str, Any]:
+        """
+        Change the protection level of a MediaWiki page.
+
+        Args:
+            protections: Protection levels, e.g. ["edit=sysop", "move=sysop"]; use "all" to remove protection
+            title: Title of the page to (un)protect. Cannot be used together with pageid
+            pageid: Page ID of the page to (un)protect. Cannot be used together with title
+            expiry: Expiry per protection ("infinite" or a timestamp); one value applies to all
+            reason: Reason for (un)protecting
+            tags: Change tags to apply to the entry in the protection log
+            cascade: Protect transcluded templates and pages as well
+            watchlist: Watchlist behavior - "nochange", "preferences", "unwatch", "watch"
+            watchlistexpiry: Watchlist expiry timestamp
+            **kwargs: Additional parameters
+
+        Returns:
+            API response dictionary
+        """
+        if not title and not pageid:
+            raise ValueError("Either title or pageid must be provided")
+
+        if title and pageid:
+            raise ValueError("Cannot specify both title and pageid")
+
+        if not protections:
+            raise ValueError("At least one protection must be provided")
+
+        if not self.auth_client.csrf_token:
+            await self.auth_client.get_csrf_token()
+
+        if not self.auth_client.csrf_token:
+            raise ValueError("Could not obtain CSRF token")
+
+        # Build protect parameters
+        protect_data = {
+            "action": "protect",
+            "format": "json",
+            "protections": "|".join(protections),
+            "token": self.auth_client.csrf_token
+        }
+
+        if title:
+            protect_data["title"] = title
+        else:
+            protect_data["pageid"] = str(pageid)
+
+        # Optional parameters
+        if expiry:
+            protect_data["expiry"] = "|".join(expiry)
+        if reason:
+            protect_data["reason"] = reason
+        if tags:
+            protect_data["tags"] = "|".join(tags)
+        if cascade:
+            protect_data["cascade"] = "1"
+        if watchlist != "preferences":
+            protect_data["watchlist"] = watchlist
+        if watchlistexpiry:
+            protect_data["watchlistexpiry"] = watchlistexpiry
+
+        # Add any additional parameters
+        protect_data.update(kwargs)
+
+        try:
+            response = await self.auth_client._make_request("POST", data=protect_data)
+
+            if "protect" in response:
+                logger.info(f"Successfully changed protection for page: {title or pageid}")
+                protect_result: dict[str, Any] = response["protect"]
+                return protect_result
+            else:
+                logger.error(f"Protect failed: {response}")
+                return response
+
+        except Exception as e:
+            logger.error(f"Protect request failed: {e}")
+            raise
+
     async def compare_pages(
         self,
         fromtitle: str | None = None,
